@@ -37,15 +37,20 @@ def register():
     if User.query.filter_by(email=data["email"]).first():
         return jsonify({"error": "Email already exists"}), 409
 
-    # Create new user
+    # Create new user with role if provided
     user = User(
         username=data["username"],
         password=generate_password_hash(data["password"]),
         email=data["email"],
+        role=data.get("role", "user"),  # Default to 'user' if not specified
     )
 
-    db.session.add(user)
-    db.session.commit()
+    try:
+        db.session.add(user)
+        db.session.commit()
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": str(e)}), 400
 
     # Generate tokens
     access_token = create_access_token(identity=str(user.id))
@@ -117,7 +122,5 @@ def verify():
         tuple: JSON response and status code
     """
     current_user_id = get_jwt_identity()
-    user = User.query.get(int(current_user_id))
-    if not user:
-        return jsonify({"error": "User not found"}), 404
+    user = User.query.get_or_404(int(current_user_id))
     return jsonify({"user": user.to_dict()}), 200

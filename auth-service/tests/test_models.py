@@ -29,7 +29,10 @@ class TestModels(unittest.TestCase):
     def test_user_creation(self):
         """Test user model creation"""
         user = User(
-            username="test_user", password="test_password", email="test@example.com"
+            username="test_user",
+            password="test_password",
+            email="test@example.com",
+            role="user",
         )
         db.session.add(user)
         db.session.commit()
@@ -37,13 +40,43 @@ class TestModels(unittest.TestCase):
         self.assertIsNotNone(user.id)
         self.assertEqual(user.username, "test_user")
         self.assertEqual(user.email, "test@example.com")
+        self.assertEqual(user.role, "user")
         self.assertIsInstance(user.created_at, datetime)
         self.assertIsInstance(user.updated_at, datetime)
+
+    def test_admin_user_creation(self):
+        """Test admin user model creation"""
+        admin = User(
+            username="admin_user",
+            password="admin_password",
+            email="admin@example.com",
+            role="admin",
+        )
+        db.session.add(admin)
+        db.session.commit()
+
+        self.assertEqual(admin.role, "admin")
+        self.assertIsNotNone(admin.id)
+
+    def test_default_role(self):
+        """Test default role assignment"""
+        user = User(
+            username="default_user",
+            password="test_password",
+            email="default@example.com",
+        )
+        db.session.add(user)
+        db.session.commit()
+
+        self.assertEqual(user.role, "user")  # Should default to 'user'
 
     def test_user_to_dict(self):
         """Test user model to_dict method"""
         user = User(
-            username="test_user", password="test_password", email="test@example.com"
+            username="test_user",
+            password="test_password",
+            email="test@example.com",
+            role="user",
         )
         db.session.add(user)
         db.session.commit()
@@ -52,13 +85,29 @@ class TestModels(unittest.TestCase):
         self.assertIsInstance(user_dict, dict)
         self.assertEqual(user_dict["username"], "test_user")
         self.assertEqual(user_dict["email"], "test@example.com")
+        self.assertEqual(user_dict["role"], "user")
         self.assertIsNotNone(user_dict["created_at"])
         self.assertIsNotNone(user_dict["updated_at"])
+
+    def test_invalid_role(self):
+        """Test that invalid roles raise an error"""
+        with self.assertRaises(Exception):
+            user = User(
+                username="invalid_role_user",
+                password="test_password",
+                email="invalid@example.com",
+                role="invalid_role",  # This should raise an error
+            )
+            db.session.add(user)
+            db.session.commit()
 
     def test_user_unique_constraints(self):
         """Test user model unique constraints"""
         user1 = User(
-            username="test_user", password="test_password", email="test@example.com"
+            username="test_user",
+            password="test_password",
+            email="test@example.com",
+            role="user",
         )
         db.session.add(user1)
         db.session.commit()
@@ -67,6 +116,7 @@ class TestModels(unittest.TestCase):
             username="test_user",  # Same username
             password="test_password",
             email="different@example.com",
+            role="user",
         )
 
         with self.assertRaises(Exception):
@@ -79,6 +129,7 @@ class TestModels(unittest.TestCase):
             username="different_user",
             password="test_password",
             email="test@example.com",  # Same email
+            role="user",
         )
 
         with self.assertRaises(Exception):

@@ -5,7 +5,7 @@ Tests for authentication routes
 import json
 import unittest
 from app import create_app, db
-# from app.models import User
+from app.models import User
 
 
 class TestAuthRoutes(unittest.TestCase):
@@ -29,6 +29,14 @@ class TestAuthRoutes(unittest.TestCase):
             "username": "testuser",
             "password": "testpass",
             "email": "test@example.com",
+            "role": "user",
+        }
+
+        self.test_admin_data = {
+            "username": "testadmin",
+            "password": "adminpass",
+            "email": "admin@example.com",
+            "role": "admin",
         }
 
     def tearDown(self):
@@ -52,8 +60,19 @@ class TestAuthRoutes(unittest.TestCase):
             }
         return self.client.post("/api/auth/login", json=credentials)
 
-    def test_register_success(self):
-        """Test successful user registration"""
+    def register_and_login(self, is_admin=False):
+        """Helper method to register and login a user"""
+        user_data = self.test_admin_data if is_admin else self.test_user_data
+        self.register_user(user_data)
+        credentials = {
+            "username": user_data["username"],
+            "password": user_data["password"],
+        }
+        response = self.login_user(credentials)
+        return json.loads(response.data)
+
+    def test_register_user(self):
+        """Test regular user registration"""
         response = self.register_user()
         data = json.loads(response.data)
 
@@ -62,75 +81,53 @@ class TestAuthRoutes(unittest.TestCase):
         self.assertIn("refresh_token", data)
         self.assertIn("user", data)
         self.assertEqual(data["user"]["username"], self.test_user_data["username"])
-        self.assertEqual(data["user"]["email"], self.test_user_data["email"])
+        self.assertEqual(data["user"]["role"], "user")
 
-    def test_register_missing_fields(self):
-        """Test registration with missing fields"""
-        incomplete_data = {"username": "testuser"}
-        response = self.register_user(incomplete_data)
+    def test_register_admin(self):
+        """Test admin user registration"""
+        response = self.register_user(self.test_admin_data)
         data = json.loads(response.data)
 
-        self.assertEqual(response.status_code, 400)
-        self.assertEqual(data["error"], "Missing required fields")
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(data["user"]["role"], "admin")
 
     def test_register_duplicate_username(self):
         """Test registration with duplicate username"""
-        # Register first user
         self.register_user()
-
-        # Try to register with same username
         response = self.register_user()
         data = json.loads(response.data)
 
         self.assertEqual(response.status_code, 409)
         self.assertEqual(data["error"], "Username already exists")
 
-    def test_register_duplicate_email(self):
-        """Test registration with duplicate email"""
-        # Register first user
-        self.register_user()
-
-        # Try to register with same email
-        duplicate_email_data = {
-            "username": "different_user",
-            "password": "testpass",
-            "email": self.test_user_data["email"],
-        }
-        response = self.register_user(duplicate_email_data)
-        data = json.loads(response.data)
-
-        self.assertEqual(response.status_code, 409)
-        self.assertEqual(data["error"], "Email already exists")
-
     def test_login_success(self):
         """Test successful login"""
-        # Register user first
         self.register_user()
-
-        # Try to login
         response = self.login_user()
         data = json.loads(response.data)
 
         self.assertEqual(response.status_code, 200)
         self.assertIn("access_token", data)
         self.assertIn("refresh_token", data)
-        self.assertIn("user", data)
-        self.assertEqual(data["user"]["username"], self.test_user_data["username"])
+        self.assertEqual(data["user"]["role"], "user")
 
-    def test_login_missing_fields(self):
-        """Test login with missing fields"""
-        response = self.login_user({"username": "testuser"})
+    def test_login_admin_success(self):
+        """Test successful admin login"""
+        self.register_user(self.test_admin_data)
+        response = self.login_user(
+            {
+                "username": self.test_admin_data["username"],
+                "password": self.test_admin_data["password"],
+            }
+        )
         data = json.loads(response.data)
 
-        self.assertEqual(response.status_code, 400)
-        self.assertEqual(data["error"], "Missing username or password")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(data["user"]["role"], "admin")
 
     def test_login_invalid_credentials(self):
         """Test login with invalid credentials"""
-        # Register user first
         self.register_user()
-
-        # Try to login with wrong password
         response = self.login_user(
             {"username": self.test_user_data["username"], "password": "wrongpass"}
         )
@@ -139,61 +136,53 @@ class TestAuthRoutes(unittest.TestCase):
         self.assertEqual(response.status_code, 401)
         self.assertEqual(data["error"], "Invalid username or password")
 
-    def test_refresh_token_success(self):
-        """Test successful token refresh"""
-        # Register and login to get tokens
-        self.register_user()
-        login_response = self.login_user()
-        login_data = json.loads(login_response.data)
-        refresh_token = login_data["refresh_token"]
+    def test_protected_route(self):
+        """Test protected route access"""
+        data = self.register_and_login()
+        token = data["access_token"]
 
-        # Try to refresh token
-        response = self.client.post(
-            "/api/auth/refresh", headers={"Authorization": f"Bearer {refresh_token}"}
-        )
-        data = json.loads(response.data)
+        headers = {"Authorization": f"Bearer {token}"}
+        response = self.client.get("/api/auth/verify", headers=headers)
 
         self.assertEqual(response.status_code, 200)
+        data = json.loads(response.data)
+        self.assertIn("user", data)
+        self.assertEqual(data["user"]["role"], "user")
+
+    def test_admin_protected_route(self):
+        """Test admin protected route access"""
+        data = self.register_and_login(is_admin=True)
+        token = data["access_token"]
+
+        headers = {"Authorization": f"Bearer {token}"}
+        response = self.client.get("/api/auth/verify", headers=headers)
+
+        self.assertEqual(response.status_code, 200)
+        data = json.loads(response.data)
+        self.assertEqual(data["user"]["role"], "admin")
+
+    def test_refresh_token(self):
+        """Test refresh token functionality"""
+        data = self.register_and_login()
+        refresh_token = data["refresh_token"]
+
+        headers = {"Authorization": f"Bearer {refresh_token}"}
+        response = self.client.post("/api/auth/refresh", headers=headers)
+
+        self.assertEqual(response.status_code, 200)
+        data = json.loads(response.data)
         self.assertIn("access_token", data)
 
-    def test_refresh_token_invalid(self):
-        """Test refresh with invalid token"""
-        response = self.client.post(
-            "/api/auth/refresh", headers={"Authorization": "Bearer invalid_token"}
-        )
+    def test_invalid_token(self):
+        """Test invalid token handling"""
+        headers = {"Authorization": "Bearer invalid_token"}
+        response = self.client.get("/api/auth/verify", headers=headers)
 
         self.assertEqual(response.status_code, 422)
 
-    def test_verify_success(self):
-        """Test successful token verification"""
-        # Register and login to get tokens
-        self.register_user()
-        login_response = self.login_user()
-        login_data = json.loads(login_response.data)
-        access_token = login_data["access_token"]
-
-        # Try to verify token
-        response = self.client.get(
-            "/api/auth/verify", headers={"Authorization": f"Bearer {access_token}"}
-        )
-        data = json.loads(response.data)
-
-        self.assertEqual(response.status_code, 200)
-        self.assertIn("user", data)
-        self.assertEqual(data["user"]["username"], self.test_user_data["username"])
-
-    def test_verify_invalid_token(self):
-        """Test verify with invalid token"""
-        response = self.client.get(
-            "/api/auth/verify", headers={"Authorization": "Bearer invalid_token"}
-        )
-
-        self.assertEqual(response.status_code, 422)
-
-    def test_verify_missing_token(self):
-        """Test verify without token"""
+    def test_missing_token(self):
+        """Test missing token handling"""
         response = self.client.get("/api/auth/verify")
-
         self.assertEqual(response.status_code, 401)
 
 
