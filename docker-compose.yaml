@@ -1,32 +1,42 @@
-version: '3.8'
-
 services:
-  auth:
+  auth-service:
     build:
-      context: .
+      context: ./auth-service
       dockerfile: Dockerfile
     ports:
-      - "5000:5000"
+      - "5001:5000"
     environment:
-      - DATABASE_URL=mysql://root:secret@db/auth_db
-      - JWT_SECRET_KEY=your-secret-key
+      - FLASK_APP=app/__init__.py
+      - FLASK_ENV=development
+      - DATABASE_URL=mysql+pymysql://auth_user:auth_password@auth-db:3306/microservices?charset=utf8mb4
+      - JWT_SECRET_KEY=dev-secret-key-123
+      - PYTHONUNBUFFERED=1
     depends_on:
-      - db
+      - auth-db
+    networks:
+      - microservices-network
     volumes:
-      - ./app:/app/app
-    command: gunicorn --bind 0.0.0.0:5000 'app:create_app()'
+      - ./auth-service/app:/app/app
 
-  db:
+  auth-db:
     image: mysql:8.0
     environment:
-      MYSQL_ROOT_PASSWORD: secret
-      MYSQL_DATABASE: auth_db
+      - MYSQL_ROOT_PASSWORD=rootpassword
+      - MYSQL_DATABASE=microservices
+      - MYSQL_USER=auth_user
+      - MYSQL_PASSWORD=auth_password
     ports:
-      - "3306:3306"
+      - "3307:3306"
     volumes:
-      - auth_db_data:/var/lib/mysql
-      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
-    command: --default-authentication-plugin=mysql_native_password
+      - auth-db-data:/var/lib/mysql
+      - ./shared/database/init.sql:/docker-entrypoint-initdb.d/init.sql
+    command: --default-authentication-plugin=caching_sha2_password
+    networks:
+      - microservices-network
+
+networks:
+  microservices-network:
+    driver: bridge
 
 volumes:
-  auth_db_data:
+  auth-db-data:
