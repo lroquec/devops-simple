@@ -92,3 +92,36 @@ body {
 .btn-danger:hover {
    background-color: #c9302c;
 }
+
+.navtop {
+   background-color: #333;
+   color: #fff;
+   height: 60px;
+   width: 100%;
+   display: flex;
+   justify-content: space-between;
+   align-items: center;
+   padding: 0 20px;
+   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.navtop div {
+   display: flex;
+   align-items: center;
+}
+
+.navtop a {
+   color: #c1c4c8;
+   text-decoration: none;
+   padding: 0 15px;
+   font-size: 16px;
+}
+
+.navtop a.logout-link {
+   margin-left: auto; /* Push the logout link to the right */
+   color: #ff6666; /* Highlight logout with a red tone */
+}
+
+.navtop a:hover {
+   color: #fff;
+}

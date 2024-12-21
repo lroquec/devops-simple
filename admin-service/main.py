@@ -1,7 +1,8 @@
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request, redirect, url_for, session
 from flask_mysqldb import MySQL
 import MySQLdb.cursors
 import os
+from functools import wraps  # For route protection
 
 app = Flask(__name__)
 
@@ -27,7 +28,46 @@ with app.app_context():
     except Exception as e:
         print("Error connecting to the database:", str(e))
 
+
+# Authentication decorator
+def admin_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if not session.get('loggedin') or session.get('role') != 'admin':
+            return redirect(url_for('login'))
+        return f(*args, **kwargs)
+    return decorated_function
+
+
+# Login route
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        username = request.form['username']
+        password = request.form['password']
+        cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+        cursor.execute('SELECT * FROM accounts WHERE username = %s AND password = SHA1(%s)', (username, password))
+        account = cursor.fetchone()
+        if account:
+            session['loggedin'] = True
+            session['id'] = account['id']
+            session['username'] = account['username']
+            session['role'] = account['role']
+            return redirect(url_for('list_users'))
+        else:
+            return "Invalid username or password."
+    return render_template('login.html')
+
+
+# Logout route
+@app.route('/logout')
+def logout():
+    session.clear()
+    return redirect(url_for('login'))
+
+
 @app.route('/users', methods=['GET'])
+@admin_required
 def list_users():
     try:
         cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
@@ -37,7 +77,9 @@ def list_users():
     except Exception as e:
         return f"An error occurred: {str(e)}"
 
+
 @app.route('/add_user', methods=['GET', 'POST'])
+@admin_required
 def add_user():
     if request.method == 'POST':
         username = request.form['username']
@@ -73,7 +115,9 @@ def add_user():
             return f"An error occurred: {str(e)}"
     return render_template('add_user.html')
 
+
 @app.route('/edit_user/<int:user_id>', methods=['GET', 'POST'])
+@admin_required
 def edit_user(user_id):
     try:
         cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
@@ -127,7 +171,9 @@ def edit_user(user_id):
     except Exception as e:
         return f"An error occurred: {str(e)}"
 
+
 @app.route('/delete_user/<int:user_id>', methods=['POST'])
+@admin_required
 def delete_user(user_id):
     try:
         cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
@@ -141,4 +187,3 @@ def delete_user(user_id):
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
-

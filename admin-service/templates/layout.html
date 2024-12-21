@@ -10,8 +10,11 @@
         <nav class="navtop">
             <div>
                 <h1>Admin Service</h1>
+                {% if session.get('loggedin') %}
                 <a href="{{ url_for('list_users') }}"><i class="fas fa-users"></i>Users</a>
                 <a href="{{ url_for('add_user') }}"><i class="fas fa-user-plus"></i>Add User</a>
+                <a href="{{ url_for('logout') }}" class="logout-link"><i class="fas fa-sign-out-alt"></i>Logout</a>
+                {% endif %}
             </div>
         </nav>
         <div class="content">
