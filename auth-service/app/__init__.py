@@ -1,35 +1,43 @@
+"""
+Authentication service implementation using Flask factory pattern
+"""
+
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_jwt_extended import JWTManager
 from datetime import timedelta
 import os
 
-# Initialize SQLAlchemy
+# Initialize extensions
 db = SQLAlchemy()
 jwt = JWTManager()
 
 
-def create_app():
+def create_app(test_config=None):
+    """Create and configure the Flask application
+
+    Args:
+        test_config (dict, optional): Test configuration to override defaults. Defaults to None.
+
+    Returns:
+        Flask: Configured Flask application
+    """
     app = Flask(__name__)
 
-    # Configuration
-    app.config["SECRET_KEY"] = os.getenv("SECRET_KEY", "dev-key-please-change")
-    app.config["SQLALCHEMY_DATABASE_URI"] = (
-        f"mysql+pymysql://{os.getenv('MYSQL_USER', 'root')}:"
-        f"{os.getenv('MYSQL_PASSWORD', 'example')}@"
-        f"{os.getenv('MYSQL_HOST', 'db')}/"
-        f"{os.getenv('MYSQL_DB', 'microservices')}"
+    # Default configuration
+    app.config.from_mapping(
+        SQLALCHEMY_DATABASE_URI=os.getenv("DATABASE_URL", "sqlite:///auth.db"),
+        SQLALCHEMY_TRACK_MODIFICATIONS=False,
+        JWT_SECRET_KEY=os.getenv("JWT_SECRET_KEY", "dev-secret-key"),
+        JWT_ACCESS_TOKEN_EXPIRES=timedelta(hours=1),
+        JWT_REFRESH_TOKEN_EXPIRES=timedelta(days=30),
     )
-    app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
-    # JWT Configuration
-    app.config["JWT_SECRET_KEY"] = os.getenv(
-        "JWT_SECRET_KEY", "jwt-secret-please-change"
-    )
-    app.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(hours=1)
-    app.config["JWT_REFRESH_TOKEN_EXPIRES"] = timedelta(days=30)
+    # Override config with test config if passed
+    if test_config is not None:
+        app.config.update(test_config)
 
-    # Initialize extensions
+    # Initialize extensions with app
     db.init_app(app)
     jwt.init_app(app)
 
@@ -41,5 +49,12 @@ def create_app():
     # Create database tables
     with app.app_context():
         db.create_all()
+
+    # Register error handlers
+    @app.errorhandler(Exception)
+    def handle_error(error):
+        """Global error handler"""
+        app.logger.error(f"Error: {str(error)}")
+        return {"error": "Internal server error"}, 500
 
     return app

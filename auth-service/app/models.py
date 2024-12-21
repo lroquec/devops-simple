@@ -1,54 +1,43 @@
-from app import db
+"""
+Database models for the authentication service
+"""
+
 from datetime import datetime
-import hashlib
-import os
+from app import db
 
 
 class User(db.Model):
+    """User model for authentication"""
+
     __tablename__ = "users"
 
     id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(50), unique=True, nullable=False)
-    password = db.Column(db.String(255), nullable=False)
-    email = db.Column(db.String(100), unique=True, nullable=False)
-    role = db.Column(db.Enum("user", "admin"), nullable=False, default="user")
-    avatar_path = db.Column(db.String(255))
-    created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    username = db.Column(db.String(80), unique=True, nullable=False)
+    password = db.Column(db.String(120), nullable=False)
+    email = db.Column(db.String(120), unique=True, nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(
-        db.DateTime, nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow
+        db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow
     )
 
-    @staticmethod
-    def hash_password(password):
-        """Hash password with app's secret key"""
-        hash_input = password + os.getenv("SECRET_KEY", "dev-key")
-        return hashlib.sha1(hash_input.encode()).hexdigest()
-
-    def verify_password(self, password):
-        """Verify password against stored hash"""
-        return self.password == self.hash_password(password)
+    def __init__(self, username, password, email):
+        self.username = username
+        self.password = password
+        self.email = email
 
     def to_dict(self):
-        """Convert user object to dictionary"""
+        """Convert user object to dictionary
+
+        Returns:
+            dict: User data dictionary
+        """
         return {
-            "id": self.id,
+            "id": str(self.id),
             "username": self.username,
             "email": self.email,
-            "role": self.role,
-            "avatar_path": self.avatar_path,
-            "created_at": self.created_at.isoformat(),
-            "updated_at": self.updated_at.isoformat(),
+            "created_at": self.created_at.isoformat() if self.created_at else None,
+            "updated_at": self.updated_at.isoformat() if self.updated_at else None,
         }
 
-
-class RevokedToken(db.Model):
-    __tablename__ = "revoked_tokens"
-
-    id = db.Column(db.Integer, primary_key=True)
-    jti = db.Column(db.String(36), unique=True, nullable=False)
-    revoked_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
-
-    @classmethod
-    def is_token_revoked(cls, jti):
-        """Check if a token is revoked"""
-        return bool(cls.query.filter_by(jti=jti).first())
+    def __repr__(self):
+        return f"<User {self.username}>"
