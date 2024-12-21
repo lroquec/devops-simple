@@ -3,6 +3,18 @@
 {% block title %}Home{% endblock %}
 
 {% block content %}
-<h2>Home Page</h2>
-<p>Welcome back, {{ username }}!</p>
+<div class="users-list-container">
+    <div class="list-header">
+        <h2>Welcome back, {{ username }}!</h2>
+    </div>
+    <div class="welcome-content">
+        <p>What would you like to do?</p>
+        <div class="quick-actions">
+            <a href="{{ url_for('profile') }}" class="btn-small">
+                <i class="fas fa-user-circle"></i>
+                View Profile
+            </a>
+        </div>
+    </div>
+</div>
 {% endblock %}

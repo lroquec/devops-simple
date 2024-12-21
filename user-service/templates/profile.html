@@ -3,11 +3,12 @@
 {% block title %}Profile{% endblock %}
 
 {% block content %}
-<h2>Profile Page</h2>
-<div>
+<div class="users-list-container">
+    <div class="list-header">
+        <h2>Profile Page</h2>
+    </div>
     <p>Your account details are below:</p>
     <table>
-        <!-- Add table headers -->
         <thead>
             <tr>
                 <th>Field</th>
@@ -16,15 +17,15 @@
         </thead>
         <tbody>
             <tr>
-                <td>Username:</td>
+                <td><i class="fas fa-user"></i> Username:</td>
                 <td>{{ account['username'] }}</td>
             </tr>
             <tr>
-                <td>Password:</td>
+                <td><i class="fas fa-lock"></i> Password:</td>
                 <td>******</td>
             </tr>
             <tr>
-                <td>Email:</td>
+                <td><i class="fas fa-envelope"></i> Email:</td>
                 <td>{{ account['email'] }}</td>
             </tr>
         </tbody>
