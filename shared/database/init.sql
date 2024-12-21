@@ -12,4 +12,4 @@ CREATE TABLE IF NOT EXISTS `accounts` (
 
 -- Insert default admin user
 INSERT INTO `accounts` (`username`, `password`, `email`, `role`) 
-VALUES ('admin', SHA1('adminpassword'), 'admin@example.com', 'admin');
+VALUES ('admin', SHA1('myVerysecurepass531.'), 'admin@example.com', 'admin');
