@@ -1,0 +1,94 @@
+/* Add container styling */
+.form-container {
+   margin: 20px auto;
+   padding: 20px;
+   width: 400px;
+   background-color: #fff;
+   border-radius: 5px;
+   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+/* Add styling for form groups */
+.user-form .form-group {
+   margin-bottom: 15px;
+}
+
+/* Styling for form labels */
+.user-form label {
+   color: #5b6574; /* App original gray */
+   font-weight: bold;
+   margin-bottom: 5px;
+   display: block;
+}
+
+.user-form input,
+.user-form select {
+   width: 95%;
+   padding: 8px;
+   border: 1px solid #ccc;
+   border-radius: 4px;
+   color: #5b6574; /* App original gray */
+}
+
+/* Style the submit button */
+.user-form .btn {
+   background-color: #3274d6;
+   color: #fff;
+   padding: 10px 15px;
+   border: none;
+   border-radius: 4px;
+   cursor: pointer;
+   font-size: 16px;
+   width: 100%;
+   text-align: center;
+}
+
+/* Center title above the form */
+.form-container .form-title {
+   text-align: center;
+   font-size: 24px;
+   margin-bottom: 20px;
+   color: #5b6574; /* App original gray */
+}
+
+/* Set background color for the whole app */
+body {
+   background-color: #e3e8ee; /* App original background color */
+   margin: 0;
+   font-family: -apple-system, BlinkMacSystemFont, "segoe ui", roboto, oxygen, ubuntu, cantarell, "fira sans", "droid sans", "helvetica neue", Arial, sans-serif;
+}
+
+
+.user-form .btn:hover {
+   background-color: #2868c7;
+}
+
+.btn-small {
+   background-color: #3274d6;
+   color: #fff;
+   padding: 5px 10px;
+   border: none;
+   border-radius: 3px;
+   font-size: 14px;
+   text-decoration: none;
+   cursor: pointer;
+}
+
+.btn-small:hover {
+   background-color: #2868c7;
+}
+
+.btn-danger {
+   background-color: #d9534f;
+   color: #fff;
+   padding: 5px 10px;
+   border: none;
+   border-radius: 3px;
+   font-size: 14px;
+   text-decoration: none;
+   cursor: pointer;
+}
+
+.btn-danger:hover {
+   background-color: #c9302c;
+}

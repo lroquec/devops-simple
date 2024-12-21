@@ -1,0 +1,32 @@
+{% extends 'layout.html' %}
+
+{% block title %}Add User{% endblock %}
+
+{% block content %}
+<div class="form-container">
+    <h2 class="form-title">Add New User</h2>
+    <form action="{{ url_for('add_user') }}" method="POST" class="user-form">
+      <div class="form-group">
+          <label for="username">Username:</label>
+          <input type="text" id="username" name="username" placeholder="Enter username" required pattern=".{3,}" title="Username must be at least 3 characters">
+      </div>
+      <div class="form-group">
+          <label for="password">Password:</label>
+          <input type="password" id="password" name="password" placeholder="Enter password" required pattern=".{6,}" title="Password must be at least 6 characters">
+      </div>
+      <div class="form-group">
+          <label for="email">Email:</label>
+          <input type="email" id="email" name="email" placeholder="Enter email" required>
+      </div>
+      <div class="form-group">
+          <label for="role">Role:</label>
+          <select id="role" name="role" required>
+              <option value="user">User</option>
+              <option value="admin">Admin</option>
+          </select>
+      </div>
+      <button type="submit" class="btn">Add User</button>
+  </form>
+  
+</div>
+{% endblock %}

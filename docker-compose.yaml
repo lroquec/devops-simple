@@ -2,7 +2,6 @@ services:
   admin-service:
     build:
       context: ./admin-service
-      dockerfile: Dockerfile
     ports:
       - "5001:5000"
     depends_on:
@@ -12,10 +11,9 @@ services:
       MYSQL_USER: root
       MYSQL_PASSWORD: example
       MYSQL_DB: pythonlogin
+      SECRET_KEY: jlnjfnsfnbft358134k
     volumes:
       - ./admin-service:/app
-      - ./shared/database:/shared
-    command: python main.py
 
   db:
     image: mysql:8.0
