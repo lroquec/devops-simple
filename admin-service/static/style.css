@@ -1,77 +1,290 @@
-/* Add container styling */
-.form-container {
-   margin: 20px auto;
-   padding: 20px;
-   width: 400px;
-   background-color: #fff;
-   border-radius: 5px;
-   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+/* Unified Admin Service CSS */
+* {
+   box-sizing: border-box;
+   font-family: -apple-system, BlinkMacSystemFont, "segoe ui", roboto, oxygen, ubuntu, cantarell, "fira sans", "droid sans", "helvetica neue", Arial, sans-serif;
+   font-size: 16px;
+   -webkit-font-smoothing: antialiased;
+   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Add styling for form groups */
-.user-form .form-group {
+body {
+   background-color: #f3f4f7;
+   margin: 0;
+}
+
+/* Login Page Styling */
+.login {
+   width: 400px;
+   background-color: #ffffff;
+   box-shadow: 0 0 9px 0 rgba(0, 0, 0, 0.3);
+   margin: 100px auto;
+}
+
+.login h1 {
+   text-align: center;
+   color: #5b6574;
+   font-size: 24px;
+   padding: 20px 0;
+   border-bottom: 1px solid #dee0e4;
+   margin: 0;
+}
+
+.login form {
+   display: flex;
+   flex-wrap: wrap;
+   justify-content: center;
+   padding: 20px;
+}
+
+.login form .form-group {
+   width: 100%;
    margin-bottom: 15px;
 }
 
-/* Styling for form labels */
-.user-form label {
-   color: #5b6574; /* App original gray */
+.login form .input-icon {
+   position: relative;
+}
+
+.login form .input-icon i {
+   position: absolute;
+   top: 50%;
+   left: 15px;
+   transform: translateY(-50%);
+   color: #3274d6;
+}
+
+.login form input[type="password"],
+.login form input[type="text"] {
+   width: 100%;
+   height: 50px;
+   border: 1px solid #dee0e4;
+   padding: 0 15px 0 45px;
+   margin-bottom: 0;
+   border-radius: 4px;
+}
+
+.login form input[type="submit"] {
+   width: 100%;
+   padding: 15px;
+   margin-top: 20px;
+   background-color: #3274d6;
+   border: 0;
+   cursor: pointer;
    font-weight: bold;
-   margin-bottom: 5px;
-   display: block;
+   color: #ffffff;
+   transition: background-color 0.2s;
+   border-radius: 4px;
+}
+
+.login form input[type="submit"]:hover {
+   background-color: #2868c7;
+   transition: background-color 0.2s;
+}
+
+.login form .msg {
+   margin-top: 15px;
+   width: 100%;
+   text-align: center;
+   color: #ff6666;
+}
+
+/* Navigation Styling */
+.navtop {
+   background-color: #333;
+   height: 60px;
+   width: 100%;
+   border: 0;
+}
+
+.navtop div {
+   display: flex;
+   margin: 0 auto;
+   width: 1000px;
+   height: 100%;
+}
+
+.navtop div h1, .navtop div a {
+   display: inline-flex;
+   align-items: center;
+}
+
+.navtop div h1 {
+   flex: 1;
+   font-size: 24px;
+   padding: 0;
+   margin: 0;
+   color: #eaebed;
+   font-weight: normal;
+}
+
+.navtop div a {
+   padding: 0 20px;
+   text-decoration: none;
+   color: #c1c4c8;
+   font-weight: bold;
+}
+
+.navtop div a i {
+   padding: 2px 8px 0 0;
+}
+
+.navtop div a:hover {
+   color: #eaebed;
+}
+
+.navtop a.logout-link {
+   color: #ff6666;
+}
+
+.navtop a.logout-link:hover {
+   color: #ff8080;
+}
+
+/* Content Area Styling */
+.content {
+   width: 1000px;
+   margin: 0 auto;
+}
+
+.content > p, .content > div {
+   margin: 25px 0;
+}
+
+/* Users List Container Styling */
+.users-list-container {
+   background-color: #fff;
+   border-radius: 5px;
+   box-shadow: 0 0 9px 0 rgba(0, 0, 0, 0.1);
+   padding: 25px;
+}
+
+.list-header {
+   display: flex;
+   justify-content: space-between;
+   align-items: center;
+   margin-bottom: 20px;
+   padding-bottom: 20px;
+   border-bottom: 1px solid #dee0e4;
+}
+
+.list-header h2 {
+   margin: 0;
+   color: #5b6574;
+   font-size: 24px;
+}
+
+/* Form Group Styling */
+.user-form .form-group {
+   margin-bottom: 20px;
+}
+
+.user-form label {
+   display: flex;
+   align-items: center;
+   color: #5b6574;
+   font-weight: bold;
+   margin-bottom: 8px;
+}
+
+.user-form label i {
+   margin-right: 10px;
+   color: #3274d6;
+   width: 16px;
+   text-align: center;
 }
 
 .user-form input,
 .user-form select {
-   width: 95%;
-   padding: 8px;
-   border: 1px solid #ccc;
-   border-radius: 4px;
-   color: #5b6574; /* App original gray */
-}
-
-/* Style the submit button */
-.user-form .btn {
-   background-color: #3274d6;
-   color: #fff;
-   padding: 10px 15px;
-   border: none;
-   border-radius: 4px;
-   cursor: pointer;
-   font-size: 16px;
    width: 100%;
-   text-align: center;
+   height: 50px;
+   border: 1px solid #dee0e4;
+   padding: 0 15px;
+   color: #5b6574;
+   border-radius: 4px;
 }
 
-/* Center title above the form */
-.form-container .form-title {
-   text-align: center;
-   font-size: 24px;
+/* Form Input Focus States */
+.user-form input:focus,
+.user-form select:focus {
+   outline: none;
+   border-color: #3274d6;
+}
+
+/* Form Input Placeholder */
+.user-form input::placeholder {
+   color: #999;
+}
+
+/* Disabled State */
+.user-form input:disabled,
+.user-form select:disabled {
+   background-color: #f8f9fa;
+   cursor: not-allowed;
+}
+
+/* Form Actions */
+.form-actions {
+   margin-top: 30px;
+   padding-top: 20px;
+   border-top: 1px solid #dee0e4;
+}
+
+/* Message Styling */
+.msg {
+   padding: 15px;
    margin-bottom: 20px;
-   color: #5b6574; /* App original gray */
+   border-radius: 4px;
+   color: #fff;
 }
 
-/* Set background color for the whole app */
-body {
-   background-color: #e3e8ee; /* App original background color */
-   margin: 0;
-   font-family: -apple-system, BlinkMacSystemFont, "segoe ui", roboto, oxygen, ubuntu, cantarell, "fira sans", "droid sans", "helvetica neue", Arial, sans-serif;
+.msg-error {
+   background-color: #ff6666;
 }
 
+.msg-success {
+   background-color: #4CAF50;
+}
 
-.user-form .btn:hover {
+/* Button Styling */
+.btn {
+   width: 100%;
+   padding: 15px;
+   background-color: #3274d6;
+   border: 0;
+   cursor: pointer;
+   font-weight: bold;
+   color: #ffffff;
+   transition: background-color 0.2s;
+   border-radius: 4px;
+   display: flex;
+   align-items: center;
+   justify-content: center;
+}
+
+.btn i {
+   margin-right: 8px;
+}
+
+.btn:hover {
    background-color: #2868c7;
 }
 
 .btn-small {
    background-color: #3274d6;
-   color: #fff;
-   padding: 5px 10px;
+   color: #ffffff;
+   padding: 8px 15px;
    border: none;
    border-radius: 3px;
    font-size: 14px;
    text-decoration: none;
    cursor: pointer;
+   transition: background-color 0.2s;
+   display: inline-flex;
+   align-items: center;
+}
+
+.btn-small i {
+   margin-right: 6px;
 }
 
 .btn-small:hover {
@@ -79,49 +292,70 @@ body {
 }
 
 .btn-danger {
-   background-color: #d9534f;
-   color: #fff;
-   padding: 5px 10px;
+   background-color: #ff6666;
+   color: #ffffff;
+   padding: 8px 15px;
    border: none;
    border-radius: 3px;
    font-size: 14px;
    text-decoration: none;
    cursor: pointer;
+   transition: background-color 0.2s;
+   display: inline-flex;
+   align-items: center;
+}
+
+.btn-danger i {
+   margin-right: 6px;
 }
 
 .btn-danger:hover {
-   background-color: #c9302c;
+   background-color: #ff8080;
 }
 
-.navtop {
-   background-color: #333;
-   color: #fff;
-   height: 60px;
+/* Table Styling */
+table {
    width: 100%;
-   display: flex;
-   justify-content: space-between;
-   align-items: center;
-   padding: 0 20px;
-   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+   border-collapse: collapse;
+   margin: 0;
+   background-color: #fff;
 }
 
-.navtop div {
-   display: flex;
-   align-items: center;
+th, td {
+   padding: 15px;
+   text-align: left;
+   border-bottom: 1px solid #dee0e4;
+   vertical-align: middle;
 }
 
-.navtop a {
-   color: #c1c4c8;
-   text-decoration: none;
-   padding: 0 15px;
-   font-size: 16px;
+th {
+   background-color: #f8f9fa;
+   color: #5b6574;
+   font-weight: bold;
+   white-space: nowrap;
 }
 
-.navtop a.logout-link {
-   margin-left: auto; /* Push the logout link to the right */
-   color: #ff6666; /* Highlight logout with a red tone */
+td i {
+   color: #3274d6;
+   margin-right: 8px;
+   width: 16px;
 }
 
-.navtop a:hover {
-   color: #fff;
+tr:hover {
+   background-color: #f5f5f5;
+}
+
+/* Actions column styling */
+td.actions {
+   white-space: nowrap;
+   text-align: right;
+}
+
+td.actions .btn-small,
+td.actions .btn-danger {
+   margin-left: 8px;
+}
+
+td.actions form {
+   display: inline-block;
 }

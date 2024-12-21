@@ -3,32 +3,58 @@
 {% block title %}Users Management{% endblock %}
 
 {% block content %}
-<h2>Users List</h2>
-<hr>
-<table>
-    <thead>
-        <tr>
-            <th>ID</th>
-            <th>Username</th>
-            <th>Email</th>
-            <th>Role</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for user in users %}
-        <tr>
-            <td>{{ user['id'] }}</td>
-            <td>{{ user['username'] }}</td>
-            <td>{{ user['email'] }}</td>
-            <td>{{ user['role'] }}</td>
-            <td>
-               <a href="{{ url_for('edit_user', user_id=user['id']) }}" class="btn btn-small">Edit</a>
-               <form action="{{ url_for('delete_user', user_id=user['id']) }}" method="POST" style="display:inline;">
-                  <button type="submit" class="btn btn-small btn-danger">Delete</button>
-              </form>
-           </td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
+<div class="content">
+    <div class="users-list-container">
+        <div class="list-header">
+            <h2 class="form-title">Users Management</h2>
+            <a href="{{ url_for('add_user') }}" class="btn-small">
+                <i class="fas fa-user-plus"></i> Add New User
+            </a>
+        </div>
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Username</th>
+                    <th>Email</th>
+                    <th>Role</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for user in users %}
+                <tr>
+                    <td>{{ user['id'] }}</td>
+                    <td>
+                        <i class="fas fa-user"></i>
+                        {{ user['username'] }}
+                    </td>
+                    <td>
+                        <i class="fas fa-envelope"></i>
+                        {{ user['email'] }}
+                    </td>
+                    <td>
+                        {% if user['role'] == 'admin' %}
+                        <i class="fas fa-user-shield"></i>
+                        {% else %}
+                        <i class="fas fa-user"></i>
+                        {% endif %}
+                        {{ user['role'] }}
+                    </td>
+                    <td class="actions">
+                        <a href="{{ url_for('edit_user', user_id=user['id']) }}" class="btn-small">
+                            <i class="fas fa-edit"></i> Edit
+                        </a>
+                        <form action="{{ url_for('delete_user', user_id=user['id']) }}" method="POST" style="display:inline;">
+                            <button type="submit" class="btn-danger" onclick="return confirm('Are you sure you want to delete this user?');">
+                                <i class="fas fa-trash"></i> Delete
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
 {% endblock %}
