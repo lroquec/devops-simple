@@ -1,7 +1,7 @@
 FROM python:3.13-slim-bookworm AS builder
 
 # Set the working directory
-WORKDIR /app
+WORKDIR /user-service
 
 # Install system dependencies for mysqlclient
 RUN apt-get update && apt-get install -y \
@@ -13,10 +13,10 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy application files
-COPY . /app
+COPY . /user-service
 
 # Install Python dependencies
-RUN pip install --no-cache-dir --target=/app/dependencies -r requirements.txt
+RUN pip install --no-cache-dir --target=/user-service/dependencies -r requirements.txt
 
 # Stage 2
 FROM python:alpine3.21
@@ -27,13 +27,13 @@ RUN apk add --no-cache --force-overwrite gcc mariadb-connector-c-dev musl-dev &&
     pip install --no-cache-dir mysqlclient
 
 # Set the working directory
-WORKDIR /app
+WORKDIR /user-service
 
 # Copy the dependencies from the builder image
-COPY --from=builder /app/dependencies /usr/local/lib/python3.13/site-packages
+COPY --from=builder /user-service/dependencies /usr/local/lib/python3.13/site-packages
 
 # Copy the application files
-COPY . /app
+COPY . /user-service
 
 # Set PYTHONPATH
 ENV PYTHONPATH=/usr/local/lib/python3.13/site-packages
