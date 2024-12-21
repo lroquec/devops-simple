@@ -1,7 +1,7 @@
 import unittest
 from flask import json
 from app import create_app, db
-from app.models import User, RevokedToken
+from app.models import User
 import os
 
 
