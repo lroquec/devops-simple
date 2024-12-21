@@ -25,7 +25,6 @@ mysql = MySQL(app)
 def index():
     return redirect(url_for("login"))
 
-
 @app.route("/login/", methods=["GET", "POST"])
 def login():
     msg = ""
@@ -36,28 +35,25 @@ def login():
     ):
         username = request.form["username"]
         password = request.form["password"]
-        # Hash the password with a secret key
-        hash_input = password + app.secret_key  # NOSONAR
-        hashed_password = hashlib.sha1(hash_input.encode())  # NOSONAR
-        password = hashed_password.hexdigest()  # NOSONAR
+
+        # Hash the provided password using SHA1
+        hashed_password = hashlib.sha1(password.encode()).hexdigest()
+
         cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
         cursor.execute(
             "SELECT * FROM accounts WHERE username = %s AND password = %s",
-            (
-                username,
-                password,
-            ),
+            (username, hashed_password),
         )
         account = cursor.fetchone()
         if account:
             session["loggedin"] = True
             session["id"] = account["id"]
             session["username"] = account["username"]
+            session["role"] = account["role"]  # Retrieve role from database
             return redirect(url_for("home"))
         else:
             msg = "Incorrect username/password!"
     return render_template("index.html", msg=msg)
-
 
 @app.route("/login/logout")
 def logout():
@@ -65,7 +61,6 @@ def logout():
     session.pop("id", None)
     session.pop("username", None)
     return redirect(url_for("login"))
-
 
 @app.route("/login/register", methods=["GET", "POST"])
 def register():
@@ -79,6 +74,8 @@ def register():
         username = request.form["username"]
         password = request.form["password"]
         email = request.form["email"]
+        role = "user"  # Default role for all registrations
+
         cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
         cursor.execute("SELECT * FROM accounts WHERE username = %s", (username,))
         account = cursor.fetchone()
@@ -91,23 +88,19 @@ def register():
         elif not username or not password or not email:
             msg = "Please fill out the form!"
         else:
-            hash_input = password + app.secret_key  # NOSONAR
-            hashed_password = hashlib.sha1(hash_input.encode())  # NOSONAR
-            password = hashed_password.hexdigest()  # NOSONAR
+            # Hash the password using SHA1
+            hashed_password = hashlib.sha1(password.encode()).hexdigest()
+
+            # Insert into the database
             cursor.execute(
-                "INSERT INTO accounts VALUES (NULL, %s, %s, %s)",
-                (
-                    username,
-                    password,
-                    email,
-                ),
+                "INSERT INTO accounts (username, password, email, role) VALUES (%s, %s, %s, %s)",
+                (username, hashed_password, email, role),
             )
             mysql.connection.commit()
             msg = "You have successfully registered!"
     elif request.method == "POST":
         msg = "Please fill out the form!"
     return render_template("register.html", msg=msg)
-
 
 @app.route("/login/home")
 def home():
