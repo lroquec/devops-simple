@@ -29,6 +29,9 @@ with app.app_context():
     except Exception as e:
         print("Error connecting to the database:", str(e))
 
+@app.route("/")
+def index():
+    return redirect(url_for("login"))
 
 # Authentication decorator
 def admin_required(f):
