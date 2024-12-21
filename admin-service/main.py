@@ -80,7 +80,13 @@ def list_users():
         users = cursor.fetchall()
         return render_template("users.html", users=users)
     except Exception as e:
-        return f"An error occurred: {str(e)}"
+        print(f"Error fetching users: {str(e)}")  # Log the error
+        return (
+            render_template(
+                "error.html", message="An error occurred while fetching users."
+            ),
+            500,
+        )
 
 
 @app.route("/add_user", methods=["GET", "POST"])
