@@ -1,42 +1,32 @@
 services:
-  auth-service:
+  admin-service:
     build:
-      context: ./auth-service
+      context: ./admin-service
       dockerfile: Dockerfile
     ports:
       - "5001:5000"
-    environment:
-      - FLASK_APP=app/__init__.py
-      - FLASK_ENV=development
-      - DATABASE_URL=mysql+pymysql://auth_user:auth_password@auth-db:3306/microservices?charset=utf8mb4
-      - JWT_SECRET_KEY=dev-secret-key-123
-      - PYTHONUNBUFFERED=1
     depends_on:
-      - auth-db
-    networks:
-      - microservices-network
+      - db
+    environment:
+      MYSQL_HOST: db
+      MYSQL_USER: root
+      MYSQL_PASSWORD: example
+      MYSQL_DB: pythonlogin
     volumes:
-      - ./auth-service/app:/app/app
+      - ./admin-service:/app
+      - ./shared/database:/shared
+    command: python main.py
 
-  auth-db:
+  db:
     image: mysql:8.0
     environment:
-      - MYSQL_ROOT_PASSWORD=rootpassword
-      - MYSQL_DATABASE=microservices
-      - MYSQL_USER=auth_user
-      - MYSQL_PASSWORD=auth_password
+      MYSQL_ROOT_PASSWORD: example
+      MYSQL_DATABASE: pythonlogin
     ports:
-      - "3307:3306"
+      - "3306:3306"
     volumes:
-      - auth-db-data:/var/lib/mysql
+      - db_data:/var/lib/mysql
       - ./shared/database/init.sql:/docker-entrypoint-initdb.d/init.sql
-    command: --default-authentication-plugin=caching_sha2_password
-    networks:
-      - microservices-network
-
-networks:
-  microservices-network:
-    driver: bridge
 
 volumes:
-  auth-db-data:
+  db_data:
