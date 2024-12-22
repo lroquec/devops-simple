@@ -72,3 +72,91 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
+  build-admin-service:
+    needs: [test-and-sonarcloud]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Build and Push admin-service
+        uses: docker/build-push-action@v6
+        with:
+          context: ./admin-service
+          file: ./admin-service/Dockerfile
+          push: true
+          tags: ${{ secrets.DOCKER_USERNAME }}/${{ vars.IMAGE_NAME }}-admin:test
+
+  build-user-service:
+    needs: [test-and-sonarcloud]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Build and Push user-service
+        uses: docker/build-push-action@v6
+        with:
+          context: ./user-service
+          file: ./user-service/Dockerfile
+          push: true
+          tags: ${{ secrets.DOCKER_USERNAME }}/${{ vars.IMAGE_NAME }}-user:test
+
+  trivy-image-check-admin-service:
+    needs: [build-admin-service]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install Trivy
+        run: |
+          wget https://github.com/aquasecurity/trivy/releases/download/v0.57.0/trivy_0.57.0_Linux-64bit.deb
+          sudo dpkg -i trivy_0.57.0_Linux-64bit.deb
+
+      - name: Run Trivy vulnerability scanner
+        run: |
+          trivy image --severity CRITICAL --exit-code 1 --format sarif --output trivy-report.sarif ${{ secrets.DOCKER_USERNAME }}/${{ vars.IMAGE_NAME }}-admin:test
+
+      - name: Upload Vulnerability Scan Results
+        uses: actions/upload-artifact@v4
+        with:
+          name: trivy-report
+          path: trivy-report-admin.sarif
+          retention-days: 1
+
+  trivy-image-check-user-service:
+    needs: [build-user-service]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install Trivy
+        run: |
+          wget https://github.com/aquasecurity/trivy/releases/download/v0.57.0/trivy_0.57.0_Linux-64bit.deb
+          sudo dpkg -i trivy_0.57.0_Linux-64bit.deb
+
+      - name: Run Trivy vulnerability scanner
+        run: |
+          trivy image --severity CRITICAL --exit-code 1 --format sarif --output trivy-report.sarif ${{ secrets.DOCKER_USERNAME }}/${{ vars.IMAGE_NAME }}-user:test
+
+      - name: Upload Vulnerability Scan Results
+        uses: actions/upload-artifact@v4
+        with:
+          name: trivy-report
+          path: trivy-report-user.sarif
+          retention-days: 1
