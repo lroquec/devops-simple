@@ -37,9 +37,6 @@ COPY . /user-service
 # Set PYTHONPATH
 ENV PYTHONPATH=/usr/local/lib/python3.13/site-packages
 
-# Set the secret key. This is use for the hashing of the password of db
-ENV SECRET_KEY=jlnjfnsfnbft358134k
-
 RUN addgroup -S nonroot \
     && adduser -S nonroot -G nonroot
 

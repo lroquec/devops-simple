@@ -2,13 +2,17 @@ from flask import Flask, render_template, request, redirect, url_for, session
 from flask_mysqldb import MySQL
 import MySQLdb.cursors
 import os
+from dotenv import load_dotenv
 from functools import wraps  # For route protection
 
 
 app = Flask(__name__)
 
 # Secret key for session management
-app.config["SECRET_KEY"] = os.environ["SECRET_KEY"]
+# app.config["SECRET_KEY"] = os.environ["SECRET_KEY"]
+load_dotenv()
+
+app.config["SECRET_KEY"] = os.getenv("SECRET_KEY")
 
 # Database connection details
 app.config["MYSQL_HOST"] = os.getenv("MYSQL_HOST", "db")

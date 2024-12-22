@@ -4,12 +4,15 @@ import MySQLdb.cursors
 import re
 import hashlib
 import os
-
+from dotenv import load_dotenv
 
 app = Flask(__name__)
 
 # Secret key for session management (using environment variable for Docker compatibility)
-app.config["SECRET_KEY"] = os.environ["SECRET_KEY"]  # NOSONAR
+# app.config["SECRET_KEY"] = os.environ["SECRET_KEY"]  # NOSONAR
+load_dotenv()
+
+app.config["SECRET_KEY"] = os.getenv("SECRET_KEY")
 
 # Database connection details (using environment variables for Docker compatibility)
 app.config["MYSQL_HOST"] = os.getenv("MYSQL_HOST", "localhost")
