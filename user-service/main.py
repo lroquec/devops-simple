@@ -25,6 +25,7 @@ mysql = MySQL(app)
 def index():
     return redirect(url_for("login"))
 
+
 @app.route("/login/", methods=["GET", "POST"])
 def login():
     msg = ""
@@ -55,12 +56,14 @@ def login():
             msg = "Incorrect username/password!"
     return render_template("index.html", msg=msg)
 
+
 @app.route("/login/logout")
 def logout():
     session.pop("loggedin", None)
     session.pop("id", None)
     session.pop("username", None)
     return redirect(url_for("login"))
+
 
 @app.route("/login/register", methods=["GET", "POST"])
 def register():
@@ -101,6 +104,7 @@ def register():
     elif request.method == "POST":
         msg = "Please fill out the form!"
     return render_template("register.html", msg=msg)
+
 
 @app.route("/login/home")
 def home():

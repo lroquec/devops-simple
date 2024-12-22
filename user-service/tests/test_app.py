@@ -203,6 +203,7 @@ class FlaskLoginTests(unittest.TestCase):
         self.assertEqual(response.status_code, 302)
         self.assertIn("/login", response.location)
 
+
 if __name__ == "__main__":
     unittest.main()
 
