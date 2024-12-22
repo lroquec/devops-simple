@@ -21,7 +21,6 @@ RUN pip install --no-cache-dir --target=/user-service/dependencies -r requiremen
 # Stage 2
 FROM python:alpine3.21
 
-
 # Install system dependencies for mariadb-connector-c
 RUN apk add --no-cache --force-overwrite gcc mariadb-connector-c-dev musl-dev && \
     pip install --no-cache-dir mysqlclient
