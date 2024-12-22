@@ -29,14 +29,17 @@ with app.app_context():
     except Exception as e:
         print("Error connecting to the database:", str(e))
 
+
 @app.before_request
 def clear_session_on_start():
-    if request.endpoint == 'login':
+    if request.endpoint == "login":
         session.clear()  # Asegúrate de que no haya residuos de sesiones previas.
+
 
 @app.route("/")
 def index():
     return redirect(url_for("login"))
+
 
 # Authentication decorator
 def admin_required(f):
