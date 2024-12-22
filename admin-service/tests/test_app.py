@@ -40,7 +40,7 @@ def test_login_success(mock_mysql, client):
 
     # Aserciones
     assert response.status_code == 200
-    assert b"Users List" in response.data
+    assert b"Users Management" in response.data
 
 
 def test_login_failure(mock_mysql, client):
@@ -102,7 +102,7 @@ def test_add_user(mock_mysql, client):
 
     # Aserciones
     assert response.status_code == 200
-    assert b"Users List" in response.data  # Redirige a la lista de usuarios
+    assert b"Users Management" in response.data  # Redirige a la lista de usuarios
 
 
 def test_delete_user(mock_mysql, client):
@@ -116,7 +116,7 @@ def test_delete_user(mock_mysql, client):
 
     # Aserciones
     assert response.status_code == 200
-    assert b"Users List" in response.data
+    assert b"Users Management" in response.data
 
 
 def test_protected_route_without_login(client):
@@ -190,7 +190,7 @@ def test_edit_user_post(mock_mysql, client):
 
     # Aserciones
     assert response.status_code == 200
-    assert b"Users List" in response.data
+    assert b"Users Management" in response.data
 
 
 def test_edit_user_invalid_email(mock_mysql, client):
