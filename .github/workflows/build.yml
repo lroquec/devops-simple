@@ -105,7 +105,7 @@ jobs:
           context: ./admin-service
           file: ./admin-service/Dockerfile
           push: true
-          tags: ${{ secrets.DOCKER_USERNAME }}/${{ vars.IMAGE_NAME }}-admin:test
+          tags: ${{ secrets.DOCKER_USERNAME }}/${{ vars.IMAGE_NAME }}-admin:${{ github.sha }}
 
   build-user-service:
     needs: [test-and-sonarcloud]
@@ -135,7 +135,7 @@ jobs:
           context: ./user-service
           file: ./user-service/Dockerfile
           push: true
-          tags: ${{ secrets.DOCKER_USERNAME }}/${{ vars.IMAGE_NAME }}-user:test
+          tags: ${{ secrets.DOCKER_USERNAME }}/${{ vars.IMAGE_NAME }}-user:${{ github.sha }}
 
   trivy-image-check-admin-service:
     needs: [build-admin-service]
@@ -176,3 +176,34 @@ jobs:
           name: trivy-report
           path: trivy-report-user.sarif
           retention-days: 1
+
+  commit-manifests:
+    needs: [trivy-image-check-user-service, trivy-image-check-admin-service]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout K8S Manifests repo
+        uses: actions/checkout@v4
+        with:
+          repository: lroquec/devops-simple-k8s
+          token: ${{ secrets.K8S_MANIFESTS_TOKEN }}
+          ref: main
+          path: devops-simple-k8s
+
+      - name: Update usermgmt-admin image
+        run: |
+          sed -i 's#image: lroquec/usermgm-admin:.*#image: lroquec/usermgm-admin:${{ github.sha }}#' \
+            devops-simple-k8s/07-UserMgmtAdmin-Deployment.yaml
+
+      - name: Update usermgmt-user image
+        run: |
+          sed -i 's#image: lroquec/usermgm-user:.*#image: lroquec/usermgm-user:${{ github.sha }}#' \
+            devops-simple-k8s/09-UserMgmtUser-Deployment.yaml
+
+      - name: Commit and push changes
+        run: |
+          cd devops-simple-k8s
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add .
+          git commit -m "chore: update usermgmt-admin and usermgm-user images to SHA ${{ github.sha }}"
+          git push origin main
