@@ -15,7 +15,7 @@ load_dotenv()
 app.config["SECRET_KEY"] = os.getenv("SECRET_KEY")
 
 # Database connection details
-app.config["MYSQL_HOST"] = os.getenv("MYSQL_HOST", "db")
+app.config["MYSQL_HOST"] = os.getenv("MYSQL_HOST")
 app.config["MYSQL_USER"] = os.getenv("MYSQL_USER", "root")
 app.config["MYSQL_PASSWORD"] = os.getenv("MYSQL_PASSWORD", "example")
 app.config["MYSQL_DB"] = os.getenv("MYSQL_DB", "pythonlogin")
