@@ -44,6 +44,8 @@ ENV PYTHONPATH=/usr/local/lib/python3.13/site-packages
 RUN addgroup -S nonroot \
     && adduser -S nonroot -G nonroot
 
+USER nonroot
+
 # Expose port 5000
 EXPOSE 5000
 
