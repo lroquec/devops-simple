@@ -189,15 +189,16 @@ jobs:
           ref: main
           path: devops-simple-k8s
 
-      - name: Update usermgmt-admin image
+      - name: Update container images
         run: |
-          sed -i 's#image: lroquec/usermgm-admin:.*#image: lroquec/usermgm-admin:${{ github.sha }}#' \
-            devops-simple-k8s/07-UserMgmtAdmin-Deployment.yaml
-
-      - name: Update usermgmt-user image
-        run: |
-          sed -i 's#image: lroquec/usermgm-user:.*#image: lroquec/usermgm-user:${{ github.sha }}#' \
-            devops-simple-k8s/09-UserMgmtUser-Deployment.yaml
+          for file in devops-simple-k8s/*.yaml; do
+            if grep -q "image: lroquec/usermgm-admin:" "$file"; then
+              sed -i "s#image: lroquec/usermgm-admin:.*#image: lroquec/usermgm-admin:${{ github.sha }}#" "$file"
+            fi
+            if grep -q "image: lroquec/usermgm-user:" "$file"; then
+              sed -i "s#image: lroquec/usermgm-user:.*#image: lroquec/usermgm-user:${{ github.sha }}#" "$file"
+            fi
+          done
 
       - name: Commit and push changes
         run: |
