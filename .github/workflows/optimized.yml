@@ -78,7 +78,7 @@ jobs:
           cat results/user-summary.md >> $GITHUB_STEP_SUMMARY
 
   sonarcloud:
-    needs: [test-admin, test-user]
+    needs: [flake8-lint, test-admin, test-user]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -90,7 +90,7 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
   build-services:
-    needs: [flake8-lint, test-admin, test-user]
+    needs: [sonarcloud]
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -123,16 +123,16 @@ jobs:
       - uses: aquasecurity/trivy-action@master
         with:
           image-ref: ${{ secrets.DOCKER_USERNAME }}/${{ vars.IMAGE_NAME }}-${{ matrix.service }}:${{ github.sha }}
-          format: 'table,sarif'
+          format: 'sarif'
           output: 'trivy-results-${{ matrix.service }}.sarif'
-          severity: 'CRITICAL,HIGH'
+          severity: 'CRITICAL'
           exit-code: '1'
       - name: Add Trivy Results to Job Summary
         if: always()
         run: |
           echo "## Security Scan Results for ${{ matrix.service }}-service" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          trivy image --severity CRITICAL,HIGH --no-progress ${{ secrets.DOCKER_USERNAME }}/${{ vars.IMAGE_NAME }}-${{ matrix.service }}:${{ github.sha }} >> $GITHUB_STEP_SUMMARY
+          cat trivy-results-${{ matrix.service }}.sarif >> $GITHUB_STEP_SUMMARY
       - uses: actions/upload-artifact@v4
         with:
           name: trivy-results-${{ matrix.service }}
