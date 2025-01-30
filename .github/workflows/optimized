@@ -1,0 +1,161 @@
+name: Build
+on:
+  push: 
+    branches: 
+      - main
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize]
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  flake8-lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v4
+        with:
+          python-version: "3.12"
+          cache: 'pip'
+      - uses: py-actions/flake8@v2
+        with:
+          path: "admin-service user-service"
+
+  test-admin:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+      - run: |
+          echo "SECRET_KEY=${{ secrets.SECRET_KEY }}" > .env
+          mkdir -p results
+          cd admin-service
+          pip install -r requirements.txt pytest pytest-cov coverage-badge
+          python -m pytest --cov=. --cov-report=xml --junitxml=../results/admin-test-results.xml
+      - uses: test-summary/action@v2.4
+        if: always()
+        with:
+          paths: results/admin-test-results.xml
+          output: results/admin-summary.md
+      - name: Add Test Results to Job Summary
+        if: always()
+        run: |
+          echo "## Admin Service Test Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          cat results/admin-summary.md >> $GITHUB_STEP_SUMMARY
+
+  test-user:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+      - run: |
+          echo "SECRET_KEY=${{ secrets.SECRET_KEY }}" > .env
+          mkdir -p results
+          cd user-service
+          pip install -r requirements.txt pytest pytest-cov coverage-badge
+          python -m pytest --cov=. --cov-report=xml --junitxml=../results/user-test-results.xml
+      - uses: test-summary/action@v2.4
+        if: always()
+        with:
+          paths: results/user-test-results.xml
+          output: results/user-summary.md
+      - name: Add Test Results to Job Summary
+        if: always()
+        run: |
+          echo "## User Service Test Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          cat results/user-summary.md >> $GITHUB_STEP_SUMMARY
+
+  sonarcloud:
+    needs: [test-admin, test-user]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: SonarSource/sonarqube-scan-action@v4.2.1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
+  build-services:
+    needs: [flake8-lint, test-admin, test-user]
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        service: [admin, user]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-qemu-action@v3
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASS }}
+      - run: echo "SECRET_KEY=${{ secrets.SECRET_KEY }}" > .env
+      - uses: docker/build-push-action@v6
+        with:
+          context: ./${{ matrix.service }}-service
+          file: ./${{ matrix.service }}-service/Dockerfile
+          push: true
+          tags: ${{ secrets.DOCKER_USERNAME }}/${{ vars.IMAGE_NAME }}-${{ matrix.service }}:${{ github.sha }}
+          cache-from: type=registry,ref=${{ secrets.DOCKER_USERNAME }}/${{ vars.IMAGE_NAME }}-${{ matrix.service }}:buildcache
+          cache-to: type=registry,ref=${{ secrets.DOCKER_USERNAME }}/${{ vars.IMAGE_NAME }}-${{ matrix.service }}:buildcache,mode=max
+
+  trivy-scan:
+    needs: [build-services]
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        service: [admin, user]
+    steps:
+      - uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: ${{ secrets.DOCKER_USERNAME }}/${{ vars.IMAGE_NAME }}-${{ matrix.service }}:${{ github.sha }}
+          format: 'table,sarif'
+          output: 'trivy-results-${{ matrix.service }}.sarif'
+          severity: 'CRITICAL,HIGH'
+          exit-code: '1'
+      - name: Add Trivy Results to Job Summary
+        if: always()
+        run: |
+          echo "## Security Scan Results for ${{ matrix.service }}-service" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          trivy image --severity CRITICAL,HIGH --no-progress ${{ secrets.DOCKER_USERNAME }}/${{ vars.IMAGE_NAME }}-${{ matrix.service }}:${{ github.sha }} >> $GITHUB_STEP_SUMMARY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: trivy-results-${{ matrix.service }}
+          path: trivy-results-${{ matrix.service }}.sarif
+          retention-days: 1
+
+  commit-manifests:
+    needs: [trivy-scan]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          repository: lroquec/devops-simple-k8s
+          token: ${{ secrets.K8S_MANIFESTS_TOKEN }}
+          ref: main
+      - run: |
+          for file in *.yaml; do
+            sed -i "s#image: lroquec/usermgm-admin:.*#image: lroquec/usermgm-admin:${{ github.sha }}#" "$file"
+            sed -i "s#image: lroquec/usermgm-user:.*#image: lroquec/usermgm-user:${{ github.sha }}#" "$file"
+          done
+      - run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add .
+          git commit -m "chore: update images to SHA ${{ github.sha }}"
+          git push origin main
