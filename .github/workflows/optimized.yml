@@ -127,17 +127,28 @@ jobs:
           output: 'trivy-results-${{ matrix.service }}.sarif'
           severity: 'CRITICAL'
           exit-code: '1'
-      - name: Add Trivy Results to Job Summary
-        if: always()
+      - name: Install jq
+        run: sudo apt-get update && sudo apt-get install -y jq
+      
+      - name: Extract and Format Trivy Results
         run: |
-          echo "## Security Scan Results for ${{ matrix.service }}-service" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          cat trivy-results-${{ matrix.service }}.sarif >> $GITHUB_STEP_SUMMARY
-      - uses: actions/upload-artifact@v4
-        with:
-          name: trivy-results-${{ matrix.service }}
-          path: trivy-results-${{ matrix.service }}.sarif
-          retention-days: 1
+          echo "### Trivy Scan Results - ${{ matrix.service }}" >> $GITHUB_STEP_SUMMARY
+          if jq -e '.runs[].results | length > 0' trivy-results-${{ matrix.service }}.sarif; then
+            echo '```' >> $GITHUB_STEP_SUMMARY
+            jq -r '
+              .runs[].results[] | 
+              "- **Vulnerability:** " + .ruleId +
+              "\n  - **Severity:** CRITICAL" +
+              "\n  - **Package:** " + .properties.package +
+              "\n  - **Installed Version:** " + .properties.installedVersion +
+              "\n  - **Fixed Version:** " + (.properties.fixedVersion // "None") +
+              "\n  - **CVE:** " + (.properties.primaryURL // "N/A") + "\n"
+            ' trivy-results-${{ matrix.service }}.sarif >> $GITHUB_STEP_SUMMARY
+            echo '```' >> $GITHUB_STEP_SUMMARY
+          else
+            echo "✅ No critical vulnerabilities found." >> $GITHUB_STEP_SUMMARY
+          fi
+
 
   commit-manifests:
     needs: [trivy-scan]
