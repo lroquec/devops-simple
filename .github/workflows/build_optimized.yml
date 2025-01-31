@@ -78,7 +78,7 @@ jobs:
           cat results/user-summary.md >> $GITHUB_STEP_SUMMARY
 
   sonarcloud:
-    needs: [flake8-lint, test-admin, test-user]
+    needs: [test-admin, test-user]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -90,7 +90,7 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
   build-services:
-    needs: [sonarcloud]
+    needs: [test-admin, test-user]
     runs-on: ubuntu-latest
     strategy:
       matrix:
