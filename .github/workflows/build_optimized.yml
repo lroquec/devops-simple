@@ -162,9 +162,8 @@ jobs:
             echo "✅ No critical vulnerabilities found." >> $GITHUB_STEP_SUMMARY
           fi
 
-
   commit-manifests:
-    needs: [sonarcloud, trivy-scan]
+    needs: [sonarcloud, trivy-scan, get-short-hash]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -173,13 +172,12 @@ jobs:
           token: ${{ secrets.K8S_MANIFESTS_TOKEN }}
           ref: main
       - run: |
-          for file in *.yaml; do
-            sed -i "s#image: lroquec/usermgm-admin:.*#image: lroquec/usermgm-admin:${{ github.sha }}#" "$file"
-            sed -i "s#image: lroquec/usermgm-user:.*#image: lroquec/usermgm-user:${{ github.sha }}#" "$file"
-          done
+          cd overlays/dev
+          kustomize edit set image lroquec/usermgm-admin:${{ needs.get-short-hash.outputs.short_hash }}
+          kustomize edit set image lroquec/usermgm-user:${{ needs.get-short-hash.outputs.short_hash }}
       - run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git add .
-          git commit -m "chore: update images to SHA ${{ github.sha }}"
+          git commit -m "chore: update dev images to short SHA ${{ needs.get-short-hash.outputs.short_hash }}"
           git push origin main
