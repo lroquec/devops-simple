@@ -99,10 +99,7 @@ jobs:
 
       - name: Get short commit hash
         id: get-hash
-        run: echo "short_hash=$(git rev-parse --short "$GITHUB_SHA")" >> "$GITHUB_ENV"
-
-      - name: Save output
-        run: echo "short_hash=${{ env.short_hash }}" >> "$GITHUB_OUTPUT"
+        run: echo "short_hash=$(git rev-parse --short "$GITHUB_SHA")" >> "$GITHUB_OUTPUT"
 
   build-services:
     needs: [test-admin, test-user, get-short-hash]
