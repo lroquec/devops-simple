@@ -102,7 +102,7 @@ jobs:
         run: echo "short_hash=$(git rev-parse --short "$GITHUB_SHA")" >> "$GITHUB_OUTPUT"
 
   build-services:
-    needs: [test-admin, test-user, get-short-hash]
+    needs: [get-short-hash]
     runs-on: ubuntu-latest
     strategy:
       matrix:
