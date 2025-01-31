@@ -78,7 +78,7 @@ jobs:
           cat results/user-summary.md >> $GITHUB_STEP_SUMMARY
 
   sonarcloud:
-    needs: [test-admin, test-user]
+    needs: [flake8-lint, test-admin, test-user]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
