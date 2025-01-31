@@ -151,7 +151,7 @@ jobs:
 
 
   commit-manifests:
-    needs: [trivy-scan]
+    needs: [sonarcloud, trivy-scan]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
