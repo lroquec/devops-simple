@@ -3,29 +3,30 @@
 {% block title %}Profile{% endblock %}
 
 {% block content %}
-<div class="users-list-container">
-    <div class="list-header">
-        <h2>Profile Page</h2>
-    </div>
-    <p>Your account details are below:</p>
+<div class="content-container">
+    <h2 class="content-header">
+        <i class="fas fa-user-circle"></i>
+        Profile Page
+    </h2>
+    <p style="margin-bottom: 1.5rem;">Your account details are below:</p>
     <table>
         <thead>
             <tr>
-                <th>Field</th>
+                <th width="40%">Field</th>
                 <th>Value</th>
             </tr>
         </thead>
         <tbody>
             <tr>
-                <td><i class="fas fa-user"></i> Username:</td>
+                <td><i class="fas fa-user"></i>&nbsp;&nbsp;Username</td>
                 <td>{{ account['username'] }}</td>
             </tr>
             <tr>
-                <td><i class="fas fa-lock"></i> Password:</td>
+                <td><i class="fas fa-lock"></i>&nbsp;&nbsp;Password</td>
                 <td>******</td>
             </tr>
             <tr>
-                <td><i class="fas fa-envelope"></i> Email:</td>
+                <td><i class="fas fa-envelope"></i>&nbsp;&nbsp;Email</td>
                 <td>{{ account['email'] }}</td>
             </tr>
         </tbody>

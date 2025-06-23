@@ -3,26 +3,24 @@
     <head>
         <meta charset="utf-8">
         <title>{% block title %}{% endblock %}</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
         <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
         <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.1/css/all.css">
+        <style>
+            body { min-height: 100vh; }
+        </style>
     </head>
-    <body class="loggedin">
+    <body>
         <nav class="navtop">
             <div>
-                <h1>User Service</h1>
-                <a href="{{ url_for('home') }}">
-                    <i class="fas fa-home"></i>Home
-                </a>
-                <a href="{{ url_for('profile') }}">
-                    <i class="fas fa-user-circle"></i>Profile
-                </a>
-                <a href="{{ url_for('logout') }}" class="logout-link">
-                    <i class="fas fa-sign-out-alt"></i>Logout
-                </a>
+                <h1><i class="fas fa-user-circle"></i>&nbsp;User Service</h1>
+                {% if session.get('loggedin') %}
+                <a href="{{ url_for('home') }}"><i class="fas fa-home"></i>Home</a>
+                <a href="{{ url_for('profile') }}"><i class="fas fa-user"></i>Profile</a>
+                <a href="{{ url_for('logout') }}" class="logout-link"><i class="fas fa-sign-out-alt"></i>Logout</a>
+                {% endif %}
             </div>
         </nav>
-        <div class="content">
-            {% block content %}{% endblock %}
-        </div>
+        {% block content %}{% endblock %}
     </body>
 </html>
